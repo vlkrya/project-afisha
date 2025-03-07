@@ -1,225 +1,227 @@
-# Проектная работа "Film!" — афиша фильмов
+# Project "Film!" – Movie Schedule and Ticket Booking
 
-Для сборки проекта
+Project Build
+To build the project, run:
 
-```
+sh
+Copy
+Edit
 npm run build
-```
+or
 
-или
-
-```
+sh
+Copy
+Edit
 yarn build
-```
+Project Launch
+To start the project, run:
 
-Для запуска
-
-```
+sh
+Copy
+Edit
 npm run start
-```
+or
 
-или
-
-```
+sh
+Copy
+Edit
 yarn start
-```
+Project Description
+The "Film!" project implements a typical ticket booking service, specifically for a cinema. Users can browse the movie schedule, select a session, and book tickets. The project is built using TypeScript and follows the SPA (Single Page Application) approach, utilizing an API to fetch movie and session data.
 
-## Описание проекта
+Key Features:
+Users can book tickets for only one session at a time.
+Movie sessions are updated on the server once a day.
+When using a mock API, booked tickets remain reserved for 24 hours, displaying occupied seats.
+The cart contents are stored in localStorage until the booking is completed.
+After a successful booking, contact details are saved in localStorage and auto-filled in the booking form next time.
+User Interface Overview
+The interface can be divided into three main processes:
 
-Проект "Film!" реализует пример типового билетного сервиса, в данном случае для кинотеатра. Пользователь может просматривать афишу фильмов, выбирать сеанс и бронировать билеты. Проект реализован на TypeScript и представляет собой SPA (Single Page Application) с использованием API для получения данных о фильмах и сеансах.
+Browsing the movie schedule (MainScreen)
+Selecting a session and seats (SelectSessionScreen, SelectPlaceScreen)
+Placing an order (BasketScreen, OrderScreen, SuccessScreen)
+Since the project uses a unified modal window system, its common logic and structure are encapsulated in an abstract class ModalScreen. All modal windows inherit from it and override the necessary methods for specific functionality.
 
-Особенности реализации:
-— в один момент времени можно бронировать билеты только на один сеанс;
-— сеансы обновляются на сервере раз в сутки;
-— при использовании заглушки АПИ билеты бронируются на сутки и можно видеть что места заняты;
-— до оформления заказа содержимое корзины сохраняется в localStorage;
-— после успешного заказа контактные данные сохраняются в localStorage и подставляются в форму заказа в следующий раз.
+Project Structure
+css
+Copy
+Edit
+.  
+├── src/  
+│   ├── common.blocks/       [Component styles]  
+│   ├── components/          [Implementation]  
+│   │   ├── base/            [Base code]  
+│   │   ├── model/           [Data models and API]  
+│   │   ├── view/            [Views]  
+│   │   │   ├── common/      [Shared components]  
+│   │   │   ├── partial/     [Domain-specific components]  
+│   │   │   ├── screen/      [Top-level screens]  
+│   │   ├── controller/      [Controllers]  
+│   ├── pages/  
+│   │   ├── index.html       [Main page and component templates]  
+│   ├── types/               [Type definitions]  
+│   │   ├── components/  
+│   │   │   ├── base/        [Base types]  
+│   │   │   ├── model/       [Model types]  
+│   │   │   ├── view/        [View types]  
+│   │   ├── global.d.ts      [Global types and environment extensions]  
+│   │   ├── settings.ts      [Settings types]  
+│   │   ├── html.ts          [HTML-related types]  
+│   ├── utils/  
+│   │   ├── constants.ts     [Project settings]  
+│   │   ├── html.ts          [DOM utility functions]  
+├── api.yaml                 [API specification]  
+Project Architecture (MVC)
+The project follows an MVC (Model-View-Controller) structure:
 
-## Описание интерфейса
+Model (AppState.ts)
+A single application state model (src/components/model/AppState.ts) contains all data logic and actions. Data changes occur through model methods, which notify observers via the onChange(changes: AppStateChanges) method, ensuring decoupled communication between components.
 
-Интерфейс можно условно разделить на 3 процесса:
-1. Просмотр афиши фильмов (MainScreen)
-2. Выбор сеанса и мест (SelectSessionScreen, SelectPlaceScreen)
-3. Оформление заказа (BasketScreen, OrderScreen, SuccessScreen)
+A wrapper, src/components/model/AppStateEmitter.ts, connects the model to the event system.
 
-Так как модальные окна в проекте однотипные, то их общая логика и структура вынесена в абстрактный класс ModalScreen. Все модальные окна наследуются от него и переопределяют методы для своих нужд.
+Controller
+Controllers act as event handlers for user actions and update the model state through its methods. The model instance is passed to controllers, which are then injected into top-level views (screens).
 
-## Структура проекта
+View
+Top-level screens listen for updates in AppStateEmitter and re-render accordingly. Screens encapsulate implementation details and receive only event handlers and necessary data.
 
-.
-├── src/
-│   ├── common.blocks/ [Стили компонент верстки]
-│   ├── components/ [Реализация]
-│   │   ├── base/ [Базовый код]
-│   │   ├── model/ [Модели данных и АПИ]
-│   │   ├── view/ [Отображения]
-│   │   │   ├── common/ [Общие]
-│   │   │   ├── partial/ [Частичные]
-│   │   │   ├── screen/ [Верхнеуровневые, экраны]
-│   │   ├── controller/
-│   ├── pages/
-│   │   ├── index.html [Основная страница и шаблоны компонент]
-│   ├── types/ [Типизация]
-│   │   ├── components/
-│   │   │   ├── base/ [Базовый код]
-│   │   │   ├── model/ [Модели данных и АПИ]
-│   │   │   ├── view/ [Отображения]
-│   │   ├── global.d.ts [Глобальные типы, расширение окружения]
-│   │   ├── settings.ts [Типизация настроек]
-│   │   ├── html.ts [Типизация настроек]
-│   ├── utils/
-│   │   ├── constants.ts [Настройки проекта]
-│   │   ├── html.ts [Утилиты для работы с DOM]
-├── api.yaml [Спецификация API]
+Interaction Flow:
+ts
+Copy
+Edit
+const api = new Api(); // API initialization
+const app = new ModelEmitter(api); // Model and event system initialization
 
-## Архитектура проекта (MVC)
-
-Реализована единая модель данных приложения в файле `src/components/model/AppState.ts`, содержащая всю логику работы с данными и возможные действия над ними. Все изменения данных происходят через методы модели, а она в свою очередь уведомляет об изменениях через метод настроек `onChange(changes: AppStateChanges)` чтобы не зависеть от конкретного способа коммуникации между компонентами. Подключение модели к системе событий производится через обертку `src/components/model/AppStateEmitter.ts`.
-
-Экземпляр модели передается в контроллеры, которые по факту являются обработчиками пользовательских действий и обновляют состояние модели через ее методы. Экземпляры контроллеров передаются в качестве объекта содержащего обработчики событий в верхнеуровневые отображения (экраны).
-
-При обработке событий возникающих в AppStateEmitter производится обновление данных в верхнеуровневых отображениях. Экраны это фактически крупные сборки инкапсулирующие детали реализации интерфейса и принимающие из вне только обработчики событий и необходимые данные. Экраны внутри составлены из более мелких отображений, которые инициализируют с помощью глобальных настроек проекта и распределяют данные между вложенными отображениями через свойства и метод `render()`.
-
-Общую цепочку взаимодействия можно представить следующим образом:
-
-```typescript
-const api = new Api(); // Инициализация API
-const app = new ModelEmitter(api); // Инициализация модели и событий
-const screen = new Screen( // Инициализация экрана
-    // экран ждет объект с обработчиками событий, например { onClick: () => void }
-	new Controller( // Инициализация контроллера
-        /* { // Обработчики событий
-            onClick: () => {
-                app.model.value += 1;
-            }
-        }*/
-		app.model // Передача модели в контроллер
+const screen = new Screen( // Screen initialization
+    new Controller( // Controller initialization
+        app.model // Passing the model to the controller
     )
 );
 
 app.on('change:value', () => {
-	screen.value = app.model.value;
+    screen.value = app.model.value;
 });
 
 // Screen.onClick -> Controller.onClick -> Model.value -> Screen.value
-```
+This connects all application components efficiently.
 
-И таким образом соединяем между собой все компоненты приложения.
+View Components
+Views are divided into three categories:
 
-### Отображения
+Common Components (common)
+Independent UI components not tied to project-specific logic.
 
-Отображения в проекте разделены на три типа:
-- `common` — общие компоненты, не зависящие от доменной области проекта
-- `partial` — частичные компоненты, реализующие доменную область проекта
-- `screen` — верхнеуровневые компоненты, которые являются экранами приложения
+Partial Components (partial)
+Components that implement domain-specific project logic.
 
-Первые два типа (common и partial) независимо типизированы, не используют глобальных настроек напрямую и могут быть легко переносимы между проектами. Экраны (screen) же зависят от глобальных настроек и используют их для инициализации и передачи данных между вложенными отображениями, так как по факту это соединительный код для удобства вынесенные в отдельные файлы и оформленный как отображение.
+Screen Components (screen)
+High-level components representing entire screens.
 
-Каждое отображение (кроме Screen) устроено следующим образом:
+Common (common) and partial (partial) components are independently typed, avoid global settings, and can be reused across projects. Screens (screen) rely on global settings for initialization and data transfer between nested views.
 
-```typescript
-class Component extends View<Тип_данных, Тип_настроек> {
+Component Example:
+ts
+Copy
+Edit
+class Component extends View<DataType, SettingsType> {
     constructor(public element: HTMLElement, protected readonly settings: Settings) {
         super(element, settings);
-        // Не переопределяем конструктор в своих отображениях!
+        // Avoid overriding the constructor in child components!
     }
-		
-	protected init() {
-        // Используем метод жизненного цикла, для инициализация компонента	
-        // Здесь вешаем события
-    }	
+
+    protected init() {
+        // Lifecycle method for component initialization
+        // Attach event listeners here
+    }
 
     set value(value: number) {
-        // Устанавливаем поле данных "value" в верстке
+        // Set the "value" field in the UI
     }
-		
+
     render() {
-        // Отрисовка компонента
-        // Переопределяем только по необходимости
+        // Render the component
         return this.element;
     }
 }
-```
+If a component needs to use another, it should be passed via settings instead of creating a direct dependency.
 
-Если необходимо использовать в одном отображении другие, то передаем их через настройки, не создавая зависимость напрямую. Пример:
+Example:
 
-```typescript
+ts
+Copy
+Edit
 interface ChildData {
     value: number;
 }
 
 interface ComponentData {
-	content: ChildData;
+    content: ChildData;
 }
 
 interface ComponentSettings {
-	contentView: IView<ChildData> // Ждем отображение принимающее данные типа ChildData
+    contentView: IView<ChildData>; // Expecting a view that takes `ChildData`
 }
 
-class Component extends View<Тип_данных, Тип_настроек> {
+class Component extends View<DataType, SettingsType> {
     set content(data: ChildData) {
         this.settings.contentView.render(data);
-        // или this.settings.contentView.value = data.value; 
+        // or this.settings.contentView.value = data.value;
     }
 }
-```
+To duplicate a component, use the copy() method, which creates a new instance with the same settings (overridable via parameters).
 
-Если нужно использовать переданное отображение как шаблон, то можно использовать метод `copy()` — копирующие конструктор, который создает новый экземпляр отображения с теми же настройками (но их можно переопределить через параметры метода).
+Model
+The AppState class represents the project's data model, handling all data logic. It follows an Observer pattern, notifying subscribers of changes via onChange(changes: AppStateChanges).
 
-
-### Модели
-
-Модели в проекте представлены классом `AppState`, который содержит в себе все данные и логику работы с ними. Модель частично реализует паттерн "Наблюдатель", и уведомляет об изменениях через метод `onChange(changes: AppStateChanges)`. Для удобства работы с данными в модели реализованы методы для изменения данных, которые в свою очередь вызывают метод `onChange()`.
-
-В целом типовая модель данных выглядит следующим образом:
-
-```typescript
+Basic Model Structure:
+ts
+Copy
+Edit
 enum ModelChanges {
-    // Изменения в модели
     value = 'change:value'
 }
 
 interface ModelSettings {
-    // Настройки модели
     onChange(changes: ModelChanges): void;
 }
 
 class Model {
     constructor(
-			protected api: Api, // API для работы с данными
-            protected settings: ModelSettings // Настройки и обработчики событий
+        protected api: Api, // API for data management
+        protected settings: ModelSettings // Settings and event handlers
     ) {
-        // Инициализация модели
+        // Model initialization
     }
 
-    // Методы для изменения данных
     public changeValue(value: number) {
-        // Изменение данных
+        // Modify data
         this.onChange(ModelChanges.value);
     }
 }
-```
+Controller
+Controllers handle user interactions and update the model state through its methods.
 
-### Контроллеры
-
-Контроллеры в проекте представлены классами унаследованными от `Controller`, и являются обработчиками пользовательских действий и обновляют состояние модели через ее методы. Контроллеры принимают в себя экземпляр модели и обрабатывают события, вызывая методы модели для изменения данных.
-
-Пример контроллера:
-
-```typescript
+Example Controller:
+ts
+Copy
+Edit
 class Controller {
     constructor(
-        protected model: Model // Модель для работы с данными
+        protected model: Model // Model instance
     ) {
-        // Инициализация контроллера
+        // Controller initialization
     }
 
-    public onClick = () => { // чтобы не потерять контекст
-        // Обработка события
+    public onClick = () => { // Preserve `this` context
         this.model.changeValue(1);
     }
 }
-```
+Controllers primarily manage event handling and decision-making, while models handle data dependencies. This separation ensures flexibility.
 
-Обычно при использовании контроллеров бизнес-логику перераспределяют так, что в моделях не принимаются решения, а только изменяются данные с соблюдением их взаимозависимостей. В контроллерах же происходит обработка событий и принятие решений, а также обновление данных в моделях. Но это не строгое правило и в зависимости от проекта можно использовать разные подходы, например в этом проекте используется несколько реализаций архитектуры в разных ветках и чтобы не переносить много кода модель реализует практически всю логику, что несколько упрощает роль контроллеров.
-
+Final Thoughts
+The Model encapsulates business logic and data management.
+Controllers act as intermediaries between the Model and the View.
+Views manage UI rendering and user interactions.
+The project adheres to modular development principles, ensuring scalability and maintainability.
+This approach allows for clear separation of concerns, making it easier to expand and refactor the project in the future. 🚀
